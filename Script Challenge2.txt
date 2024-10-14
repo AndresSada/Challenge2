@@ -1,0 +1,120 @@
+Sub ticketer()
+
+    'Loop through all the Sheets
+    Dim i As Long
+    Dim ws As Worksheet
+        For Each ws In Worksheets
+        
+    ' Find the last row in the table
+    last_row = ws.Cells(Rows.Count, 1).End(xlUp).row
+    
+    ' Add Ticketer, Quarterly Change, Percentage Change and Total Stock Volume
+    ws.Cells(1, 9).Value = "Ticketer"
+    ws.Cells(1, 10).Value = "Quarterly Change"
+    ws.Cells(1, 11).Value = "Percentage Change"
+    ws.Cells(1, 12).Value = "Total Stock Volume"
+    
+    Dim opening_price As Double
+    Dim closing_price As Double
+    Dim quarterly_change As Double
+    Dim ticketer As String
+    Dim percentage_change As Double
+    Dim stock_volume As Double
+    stock_volume = 0
+    
+    ' Locate the summary table
+    Dim summary_table As Integer
+    summary_table = 2
+    
+    ' Indicate opening price
+    opening_price = ws.Cells(2, 3).Value
+    
+    ' Loop through all the ticketers
+    For i = 2 To last_row
+    
+        If Cells(i + 1, 1).Value <> Cells(i, 1).Value Then
+              
+        ' Ticketer name and print
+        ticketer = Cells(i, 1).Value
+        ws.Range("I" & summary_table).Value = ticketer
+        
+        ' Define closing price
+        closing_price = ws.Cells(i, 6).Value
+        
+        ' Define quarterly change and print
+        quarterly_change = closing_price - opening_price
+        ws.Range("J" & summary_table).Value = quarterly_change
+        
+        ' Define percentage change and print
+        percentage_change = quarterly_change / opening_price
+        ws.Range("K" & summary_table).Value = percentage_change
+        ws.Range("K" & summary_table).NumberFormat = "0.00%"
+        
+        ' Calculate total stock volume per quarter and print
+        stock_volume = stock_volume + ws.Cells(i, 7).Value
+        ws.Range("L" & summary_table).Value = stock_volume
+        
+        ' Add one to the summary table for the next different ticketer
+        summary_table = summary_table + 1
+        
+        ' Reset the opening price
+        opening_price = ws.Cells(i + 1, 3)
+        
+        ' Reset the stock volume
+        stock_volume = 0
+        
+        Else
+        stock_volume = stock_volume + ws.Cells(i, 7).Value
+        
+        End If
+    
+    Next i
+    
+    ' Find the last row in the ticketer column
+    
+    quarterly_change_last_row = ws.Cells(Rows.Count, 9).End(xlUp).row
+    
+    ' Define the interior colors
+    For a = 2 To quarterly_change_last_row
+    
+        If (ws.Cells(a, 10).Value > 0 Or ws.Cells(a, 10).Value = 0) Then
+            ws.Cells(a, 10).Interior.ColorIndex = 10
+            
+        ElseIf ws.Cells(a, 10).Value < 0 Then
+            ws.Cells(a, 10).Interior.ColorIndex = 3
+            
+        End If
+    
+    Next a
+    
+    ' Print ticketer, value, greatest percentage increase, greatest percentage decrease and greatest total stock volume
+    ws.Cells(1, 15).Value = "Ticketer"
+    ws.Cells(1, 16).Value = "Value"
+    ws.Cells(2, 14).Value = "Greatest % increase"
+    ws.Cells(3, 14).Value = "Greatest % decrease"
+    ws.Cells(4, 14).Value = "Greatest total volume"
+    
+    ' Find the greatest % increase, greatest % decrease and the greatest total stock volume
+    For b = 2 To quarterly_change_last_row
+        If ws.Cells(b, 11).Value = Application.WorksheetFunction.Max(ws.Range("K2:K" & quarterly_change_last_row)) Then
+            ws.Cells(2, 15).Value = ws.Cells(b, 9).Value
+            ws.Cells(2, 16).Value = ws.Cells(b, 11).Value
+            ws.Cells(2, 16).NumberFormat = "0.00%"
+            
+        ElseIf ws.Cells(b, 11).Value = Application.WorksheetFunction.Min(ws.Range("K2:K" & quarterly_change_last_row)) Then
+            ws.Cells(3, 15).Value = ws.Cells(b, 9).Value
+            ws.Cells(3, 16).Value = ws.Cells(b, 11).Value
+            ws.Cells(3, 16).NumberFormat = "0.00%"
+            
+        ElseIf ws.Cells(b, 12).Value = Application.WorksheetFunction.Max(ws.Range("L2:L" & quarterly_change_last_row)) Then
+            ws.Cells(4, 15).Value = ws.Cells(b, 9).Value
+            ws.Cells(4, 16).Value = Cells(b, 12).Value
+            
+        End If
+    
+    Next b
+            
+    Next ws
+
+End Sub
+
